@@ -1,9 +1,14 @@
 package com.lemacy.cleanora.model
 
+
 data class User(
-    val id: String,
-    val name: String?,
-    val location: String?,
-    val phoneNumber: String?
+    val uid: String = "",
+    val name: String = "",
+    val email: String = "",
+    val role: String = "",
+    val location:String = "",
+    val phoneNumber: String = ""
 )
+
+
 

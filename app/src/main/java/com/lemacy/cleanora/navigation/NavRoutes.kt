@@ -13,6 +13,9 @@ object NavRoutes {
     const val CLIENT_SEARCH = "client_search"
     const val CLIENT_PROFILE = "client_profile"
     const val MPESA_PAYMENT = "mpesa_payment"
+//    const val SETTINGS = "settings"
+    const val ADMIN_MPESA = "admin_mpesa"
+    const val ADMIN_DASHBOARD = "admin_dashboard"
 }
 
 

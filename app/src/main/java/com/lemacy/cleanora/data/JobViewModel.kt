@@ -23,13 +23,11 @@ class JobViewModel : ViewModel() {
 
     private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
 
-
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
 
     private val _clientJobs = MutableStateFlow<List<Job>>(emptyList())
     val clientJobs: StateFlow<List<Job>> = _clientJobs
-
 
     private val auth = Firebase.auth
 
@@ -44,7 +42,6 @@ class JobViewModel : ViewModel() {
 
     val clientId = Firebase.auth.currentUser?.uid ?: ""
 
-
     private val _acceptedJobs = MutableStateFlow<List<Job>>(emptyList())
     val acceptedJobs: StateFlow<List<Job>> = _acceptedJobs
 
@@ -53,11 +50,19 @@ class JobViewModel : ViewModel() {
         _isLoading.value = true
         try {
             val result = db.collection("jobs").get().await()
-            val jobList = result.documents.mapNotNull { it.toObject(Job::class.java)?.copy(id = it.id) }
+            val jobList = mutableListOf<Job>()
+            for (doc in result.documents) {
+                try {
+                    val job = doc.toObject(Job::class.java)?.copy(id = doc.id)
+                    if (job != null) jobList.add(job)
+                } catch (e: Exception) {
+                    Log.e("JobViewModel", "Failed to parse job: ${e.message}")
+                }
+            }
             _jobs.value = jobList
-            _isLoading.value = false
         } catch (e: Exception) {
             _error.value = e.localizedMessage
+        } finally {
             _isLoading.value = false
         }
     }
@@ -77,7 +82,7 @@ class JobViewModel : ViewModel() {
             description = description,
             location = location,
             price = price,
-            clientId = userId  // 👈 This is the key change
+            clientId = userId
         )
 
         db.collection("jobs")
@@ -101,31 +106,38 @@ class JobViewModel : ViewModel() {
             .update("acceptedBy", uid)
             .addOnSuccessListener {
                 viewModelScope.launch {
-                    fetchAvailableJobs()   // ✅ suspend called safely
-                    fetchAcceptedJobs()    // ✅ suspend called safely
+                    fetchAvailableJobs()
+                    fetchAcceptedJobs()
                 }
             }
             .addOnFailureListener {
                 _error.value = it.message
             }
-
     }
-        fun fetchAcceptedJobs() {
-            val uid = auth.currentUser?.uid ?: return
 
-            db.collection("jobs")
-                .whereEqualTo("acceptedBy", uid)
-                .get()
-                .addOnSuccessListener { result ->
-                    val jobList = result.documents.mapNotNull {
-                        it.toObject(Job::class.java)?.copy(id = it.id)
+    fun fetchAcceptedJobs() {
+        val uid = auth.currentUser?.uid ?: return
+
+        db.collection("jobs")
+            .whereEqualTo("acceptedBy", uid)
+            .get()
+            .addOnSuccessListener { result ->
+                val jobList = mutableListOf<Job>()
+                for (doc in result.documents) {
+                    try {
+                        val job = doc.toObject(Job::class.java)?.copy(id = doc.id)
+                        if (job != null) jobList.add(job)
+                    } catch (e: Exception) {
+                        Log.e("JobViewModel", "Failed to parse accepted job: ${e.message}")
                     }
-                    _acceptedJobs.value = jobList
                 }
-                .addOnFailureListener {
-                    _error.value = it.message
-                }
-        }
+                _acceptedJobs.value = jobList
+            }
+            .addOnFailureListener {
+                _error.value = it.message
+            }
+    }
+
     fun removeAcceptedJob(jobId: String) {
         firestore.collection("jobs").document(jobId)
             .delete()
@@ -136,33 +148,30 @@ class JobViewModel : ViewModel() {
                 _error.value = exception.message
             }
     }
+
     fun loadJobsForClient(clientId: String) {
         db.collection("jobs")
             .whereEqualTo("clientId", clientId)
             .addSnapshotListener { snapshot, _ ->
                 if (snapshot != null) {
-                    val jobs = snapshot.documents.mapNotNull { it.toObject(Job::class.java) }
+                    val jobs = mutableListOf<Job>()
+                    for (doc in snapshot.documents) {
+                        try {
+                            val job = doc.toObject(Job::class.java)?.copy(id = doc.id)
+                            if (job != null) jobs.add(job)
+                        } catch (e: Exception) {
+                            Log.e("JobViewModel", "Failed to parse client job: ${e.message}")
+                        }
+                    }
                     _clientJobs.value = jobs
                 }
             }
     }
+
     fun deleteJob(jobId: String) {
         db.collection("jobs").document(jobId)
             .delete()
             .addOnSuccessListener { Log.d("JobViewModel", "Job deleted successfully") }
             .addOnFailureListener { e -> Log.w("JobViewModel", "Error deleting job", e) }
     }
-
-
 }
-
-
-
-
-
-
-
-
-
-
-

@@ -7,6 +7,7 @@ data class Job(
     val description: String = "",
     val location: String = "",
     val clientId: String = "",
+    val cleanerId: String = "",
     val price: Double = 0.0,
     val postedBy: String = ""
 )

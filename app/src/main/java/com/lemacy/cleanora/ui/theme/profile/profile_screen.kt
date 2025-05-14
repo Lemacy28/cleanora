@@ -164,11 +164,11 @@ fun EditProfileDialog(
     onDismiss: () -> Unit,
     viewModel: AuthViewModel
 ) {
-    var name by remember { mutableStateOf(cleaner?.name.orEmpty()) }
-    var age by remember { mutableStateOf(cleaner?.age.orEmpty()) }
-    var skills by remember { mutableStateOf(cleaner?.skills.orEmpty()) }
-    var location by remember { mutableStateOf(cleaner?.location.orEmpty()) }
-    var phoneNumber by remember { mutableStateOf(cleaner?.phoneNumber.orEmpty()) }
+    var name by remember { mutableStateOf("") }
+    var age by remember { mutableStateOf("") }
+    var skills by remember { mutableStateOf("") }
+    var location by remember { mutableStateOf("") }
+    var phoneNumber by remember { mutableStateOf("") }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -178,31 +178,42 @@ fun EditProfileDialog(
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("Name") })
+                    label = { Text("Name") }
+                )
                 OutlinedTextField(
                     value = age,
                     onValueChange = { age = it },
-                    label = { Text("Age") })
+                    label = { Text("Age") }
+                )
                 OutlinedTextField(
                     value = skills,
                     onValueChange = { skills = it },
-                    label = { Text("Skills") })
+                    label = { Text("Skills") }
+                )
                 OutlinedTextField(
                     value = location,
                     onValueChange = { location = it },
-                    label = { Text("Location") })
+                    label = { Text("Location") }
+                )
                 OutlinedTextField(
                     value = phoneNumber,
                     onValueChange = { phoneNumber = it },
-                    label = { Text("Phone Number") })
+                    label = { Text("Phone Number") }
+                )
             }
         },
         confirmButton = {
             TextButton(onClick = {
-                viewModel.updateProfile(name, age, skills, location, phoneNumber)
+                viewModel.updateProfile(
+                    name = name,
+                    age = age,
+                    skills = skills,
+                    location = location,
+                    phoneNumber = phoneNumber
+                )
                 onDismiss()
             }) {
-                Text("Update")
+                Text("Save")
             }
         },
         dismissButton = {

@@ -10,7 +10,6 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.lemacy.cleanora.model.Cleaner
 import com.lemacy.cleanora.model.Client
-import com.lemacy.cleanora.model.User
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -27,7 +26,6 @@ class AuthViewModel : ViewModel() {
     private val _currentClient = MutableStateFlow<Client?>(null)
     val currentClient: StateFlow<Client?> = _currentClient
 
-
     private val _authError = MutableStateFlow<String?>(null)
     val authError: StateFlow<String?> = _authError
 
@@ -43,20 +41,11 @@ class AuthViewModel : ViewModel() {
     private val _cleanerError = MutableStateFlow<String?>(null)
     val cleanerError: StateFlow<String?> = _cleanerError
 
-
-    private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
-
-
-    // Success state for profile update
     private val _profileUpdated = MutableStateFlow(false)
     val profileUpdated: StateFlow<Boolean> = _profileUpdated
 
-    // Error state for profile update
     private val _profileUpdateError = MutableStateFlow<String?>(null)
     val profileUpdateError: StateFlow<String?> = _profileUpdateError
-
-
-
 
     fun registerUser(
         name: String,
@@ -75,7 +64,7 @@ class AuthViewModel : ViewModel() {
                     "name" to name,
                     "email" to email,
                     "role" to role,
-                    "phoneNumber" to phoneNumber // ✅
+                    "phoneNumber" to phoneNumber
                 )
                 db.collection("users").document(userId).set(userData)
                     .addOnSuccessListener {
@@ -96,6 +85,16 @@ class AuthViewModel : ViewModel() {
 
     fun loginUser(email: String, password: String, onSuccess: (String) -> Unit) {
         _isLoading.value = true
+
+        // Hardcoded admin credentials check
+//        if (email == "admin@cleanora.com" && password == "admin123") {
+//            _userRole.value = "admin"
+//            _isLoading.value = false
+//            onSuccess("admin")
+//            return
+//        }
+
+        // Regular user login
         auth.signInWithEmailAndPassword(email, password)
             .addOnSuccessListener { result ->
                 val uid = result.user?.uid ?: return@addOnSuccessListener
@@ -117,16 +116,14 @@ class AuthViewModel : ViewModel() {
             }
     }
 
-
-    fun setError(message: String) {
-        _authError.value = message
-    }
-
-
     fun logout(onLogout: () -> Unit) {
         auth.signOut()
         _userRole.value = null
         onLogout()
+    }
+
+    fun setError(message: String) {
+        _authError.value = message
     }
 
     fun updateProfile(name: String, age: String, skills: String, location: String, phoneNumber: String) {
@@ -136,49 +133,22 @@ class AuthViewModel : ViewModel() {
             "age" to age,
             "skills" to skills,
             "location" to location,
-            "phoneNumber" to phoneNumber // ✅
+            "phoneNumber" to phoneNumber
         )
 
-        FirebaseFirestore.getInstance().collection("users")
-            .document(userId)
+        db.collection("users").document(userId)
             .update(updates)
             .addOnSuccessListener {
-                val updatedCleaner = Cleaner(name, age, skills, location, phoneNumber)
-                _currentUser.value = updatedCleaner
-                _profileUpdated.value = true
+                // Manually update local state
+                _currentUser.value = Cleaner(name, age, skills, location, phoneNumber)
             }
             .addOnFailureListener { e ->
-                Log.e("AuthViewModel", "Profile update failed: ${e.message}")
+                Log.e("AuthViewModel", "Cleaner profile update failed: ${e.message}")
                 _profileUpdateError.value = e.message
             }
     }
 
 
-    fun loadCurrentUserData() {
-        val userId = auth.currentUser?.uid ?: return
-        firestore.collection("users").document(userId)
-            .get()
-            .addOnSuccessListener { document ->
-                if (document.exists()) {
-                    val user = document.toObject(Cleaner::class.java)
-                    _currentUser.value = user as Cleaner?
-                }
-            }
-    }
-    fun loadCurrentClientData() {
-        val clientId = auth.currentUser?.uid ?: return
-        db.collection("clients").document(clientId).get()
-            .addOnSuccessListener { document ->
-                val client = document.toObject(Client::class.java)
-                _currentClient.value = client
-            }
-            .addOnFailureListener { exception ->
-                _profileUpdateError.value = exception.message
-            }
-    }
-    fun resetProfileUpdateFlag() {
-        _profileUpdated.value = false
-    }
     fun updateClientProfile(name: String, location: String, phoneNumber: String) {
         val userId = auth.currentUser?.uid ?: return
         val updates = mapOf(
@@ -186,20 +156,56 @@ class AuthViewModel : ViewModel() {
             "location" to location,
             "phoneNumber" to phoneNumber
         )
-        FirebaseFirestore.getInstance().collection("users")
-            .document(userId)
+
+        db.collection("users").document(userId)
             .update(updates)
             .addOnSuccessListener {
-                val updatedClient = Cleaner(name, location, phoneNumber)
-                _currentUser.value = updatedClient
+                val updatedClient = Client(name, location, phoneNumber)
+                _currentClient.value = updatedClient
                 _profileUpdated.value = true
             }
             .addOnFailureListener { e ->
-                Log.e("AuthViewModel", "Profile update failed: ${e.message}")
+                Log.e("AuthViewModel", "Client profile update failed: ${e.message}")
                 _profileUpdateError.value = e.message
             }
     }
+
+    fun loadCurrentUserData() {
+        val userId = auth.currentUser?.uid ?: return
+        db.collection("users").document(userId)
+            .get()
+            .addOnSuccessListener { document ->
+                if (document.exists()) {
+                    val user = document.toObject(Cleaner::class.java)
+                    _currentUser.value = user
+                }
+            }
+            .addOnFailureListener {
+                _profileUpdateError.value = it.message
+            }
+    }
+
+    fun loadCurrentClientData() {
+        val userId = auth.currentUser?.uid ?: return
+        db.collection("users").document(userId)
+            .get()
+            .addOnSuccessListener { document ->
+                if (document.exists()) {
+                    val client = document.toObject(Client::class.java)
+                    _currentClient.value = client
+                }
+            }
+            .addOnFailureListener {
+                _profileUpdateError.value = it.message
+            }
+    }
+
+    fun resetProfileUpdateFlag() {
+        _profileUpdated.value = false
+    }
+
 }
+
 
 //    fun fetchAllCleaners() {
 //        _isFetchingCleaners.value = true

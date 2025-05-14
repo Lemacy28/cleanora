@@ -89,32 +89,32 @@ fun CleanerHomeScreen(navController: NavHostController) {
                         onDismissRequest = { menuExpanded = false },
                         modifier = Modifier.background(Color.White)
                     ) {
-                        DropdownMenuItem(
-                            text = {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(Icons.Default.Settings, null, tint = Color.Black)
-                                    Spacer(Modifier.width(8.dp))
-                                    Text("Settings")
-                                }
-                            },
-                            onClick = {
-                                showSettingsDialog = true
-                                menuExpanded = false
-                            }
-                        )
-                        DropdownMenuItem(
-                            text = {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(Icons.Default.Help, null, tint = Color.Black)
-                                    Spacer(Modifier.width(8.dp))
-                                    Text("Help & Support")
-                                }
-                            },
-                            onClick = {
-                                showHelpDialog = true
-                                menuExpanded = false
-                            }
-                        )
+//                        DropdownMenuItem(
+//                            text = {
+//                                Row(verticalAlignment = Alignment.CenterVertically) {
+//                                    Icon(Icons.Default.Settings, null, tint = Color.Black)
+//                                    Spacer(Modifier.width(8.dp))
+//                                    Text("Settings")
+//                                }
+//                            },
+//                            onClick = {navController.navigate(SETTINGS)
+//                                showSettingsDialog = true
+//                                menuExpanded = false
+//                            }
+//                        )
+//                        DropdownMenuItem(
+//                            text = {
+//                                Row(verticalAlignment = Alignment.CenterVertically) {
+//                                    Icon(Icons.Default.Help, null, tint = Color.Black)
+//                                    Spacer(Modifier.width(8.dp))
+//                                    Text("Help & Support")
+//                                }
+//                            },
+//                            onClick = {
+//                                showHelpDialog = true
+//                                menuExpanded = false
+//                            }
+//                        )
                         DropdownMenuItem(
                             text = {
                                 Row(verticalAlignment = Alignment.CenterVertically) {

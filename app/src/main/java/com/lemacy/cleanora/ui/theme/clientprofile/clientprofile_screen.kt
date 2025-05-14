@@ -52,34 +52,17 @@ import com.lemacy.cleanora.navigation.NavRoutes.MPESA_PAYMENT
 import com.lemacy.cleanora.ui.theme.home.LemonGreen
 import com.lemacy.cleanora.ui.theme.profile.ProfileCard
 import com.lemacy.cleanora.ui.theme.profile.ProfileInfoItem
-
 @Composable
 fun ClientProfileScreen(navController: NavHostController, viewModel: AuthViewModel = viewModel()) {
     val client by viewModel.currentUser.collectAsState()
-    val profileUpdated by viewModel.profileUpdated.collectAsState()
     var isDialogOpen by remember { mutableStateOf(false) }
-
-    // Load user data when the screen is first composed
-    LaunchedEffect(Unit) {
-        viewModel.loadCurrentUserData()
-    }
-
-
-
-    LaunchedEffect(profileUpdated) {
-        if (profileUpdated) {
-            isDialogOpen = false
-            viewModel.resetProfileUpdateFlag()
-        }
-    }
-
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color(0xFFF9FFF3))
-                .padding(bottom = 56.dp) // Make room for the bottom nav
+                .padding(bottom = 56.dp)
         ) {
             // Top Bar
             Row(
@@ -114,21 +97,14 @@ fun ClientProfileScreen(navController: NavHostController, viewModel: AuthViewMod
         }
 
         // Bottom Navigation Bar
-        Box(
-            modifier = Modifier.fillMaxSize()
-        ) {
-            Column(
-                modifier = Modifier.fillMaxSize()
-            ) {
-                // Your profile screen content
-            }
+        Box(modifier = Modifier.fillMaxSize()) {
+            Column(modifier = Modifier.fillMaxSize()) {}
 
-            // Bottom Navigation Bar positioned at the bottom
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(LemonGreen)
-                    .align(Alignment.BottomCenter) // Positions it at the bottom
+                    .align(Alignment.BottomCenter)
             ) {
                 Row(
                     modifier = Modifier
@@ -180,16 +156,14 @@ fun ClientProfileScreen(navController: NavHostController, viewModel: AuthViewMod
             }
         }
 
-
-        // Edit Dialog
         if (isDialogOpen) {
             EditClientProfileDialog(
                 client = client as? Client,
-                onDismiss = {
-                    isDialogOpen = false
-                    viewModel.resetProfileUpdateFlag()
-                },
-                viewModel = viewModel
+                onDismiss = { isDialogOpen = false },
+                onSave = { name, location, phoneNumber ->
+                    viewModel.updateClientProfile(name, location, phoneNumber)
+                    isDialogOpen = false // Close immediately after saving
+                }
             )
         }
     }
@@ -199,7 +173,7 @@ fun ClientProfileScreen(navController: NavHostController, viewModel: AuthViewMod
 fun EditClientProfileDialog(
     client: Client?,
     onDismiss: () -> Unit,
-    viewModel: AuthViewModel
+    onSave: (String, String, String) -> Unit
 ) {
     var name by remember { mutableStateOf(client?.name.orEmpty()) }
     var location by remember { mutableStateOf(client?.location.orEmpty()) }
@@ -229,7 +203,7 @@ fun EditClientProfileDialog(
         },
         confirmButton = {
             TextButton(onClick = {
-                viewModel.updateClientProfile(name, location, phoneNumber)
+                onSave(name, location, phoneNumber)
             }) {
                 Text("Update")
             }

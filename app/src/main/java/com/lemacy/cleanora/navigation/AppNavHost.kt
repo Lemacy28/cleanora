@@ -9,11 +9,15 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.lemacy.cleanora.data.AuthViewModel
 import com.lemacy.cleanora.data.CleanerSearchViewModel
+import com.lemacy.cleanora.navigation.NavRoutes.ADMIN_DASHBOARD
+import com.lemacy.cleanora.navigation.NavRoutes.ADMIN_MPESA
 import com.lemacy.cleanora.navigation.NavRoutes.CLEANER_JOB_SEARCH
 import com.lemacy.cleanora.navigation.NavRoutes.CLEANER_PROFILE
 import com.lemacy.cleanora.navigation.NavRoutes.CLIENT_PROFILE
 import com.lemacy.cleanora.navigation.NavRoutes.CLIENT_SEARCH
 import com.lemacy.cleanora.navigation.NavRoutes.MPESA_PAYMENT
+import com.lemacy.cleanora.ui.theme.admin.AdminDashboardScreen
+import com.lemacy.cleanora.ui.theme.adminmpesa.AdminMpesaScreen
 import com.lemacy.cleanora.ui.theme.clientprofile.ClientProfileScreen
 import com.lemacy.cleanora.ui.theme.clientsearch.ClientCleanerSearchScreen
 import com.lemacy.cleanora.ui.theme.home.CleanerHomeScreen
@@ -25,6 +29,7 @@ import com.lemacy.cleanora.ui.theme.login.LoginScreen
 import com.lemacy.cleanora.ui.theme.mpesa.MpesaPaymentScreen
 import com.lemacy.cleanora.ui.theme.profile.ProfileScreen
 import com.lemacy.cleanora.ui.theme.register.RegisterScreen
+import com.lemacy.cleanora.ui.theme.settings.SettingsScreen
 import com.lemacy.cleanora.ui.theme.splash.SplashScreen
 
 @Composable
@@ -58,13 +63,18 @@ fun AppNavHost(
         composable (CLEANER_PROFILE) {
                 ProfileScreen(navController)
             }
+//
+
         composable(CLIENT_PROFILE) { ClientProfileScreen(navController) }
         composable(MPESA_PAYMENT) {
             MpesaPaymentScreen(navController)
 
 
         }
+        composable (ADMIN_DASHBOARD){AdminDashboardScreen(navController)}
+        composable (ADMIN_MPESA){AdminMpesaScreen(navController)}
 
     }
 
 }
+

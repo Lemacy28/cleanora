@@ -24,8 +24,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.lemacy.cleanora.data.AuthViewModel
+import com.lemacy.cleanora.navigation.NavRoutes.ADMIN_DASHBOARD
 import com.lemacy.cleanora.navigation.NavRoutes.CLEANER_HOME
 import com.lemacy.cleanora.navigation.NavRoutes.CLIENT_HOME
+import com.lemacy.cleanora.navigation.NavRoutes.LOGIN
 import com.lemacy.cleanora.navigation.NavRoutes.REGISTER
 import com.lemacy.cleanora.ui.theme.home.LemonGreen
 
@@ -127,23 +129,32 @@ fun LoginScreen(navController: NavHostController, authViewModel: AuthViewModel =
                     onClick = {
                         isLoading = true
                         loginError = null
-                        authViewModel.loginUser(email, password) { role ->
+
+                        // ✅ Hardcoded admin check before Firebase login
+                        if (email == "admin@cleanora.com" && password == "admin123") {
                             isLoading = false
-                            if (!role.isNullOrBlank()) {
-                                val destination = when (role.lowercase()) {
-                                    "client" -> "client_home"
-                                    "cleaner" -> "cleaner_home"
-                                    else -> null
-                                }
-                                destination?.let {
-                                    navController.navigate(it) {
-                                        popUpTo("login") { inclusive = true }
+                            navController.navigate(ADMIN_DASHBOARD) {
+                                popUpTo(LOGIN) { inclusive = true }
+                            }
+                        } else {
+                            authViewModel.loginUser(email, password) { role ->
+                                isLoading = false
+                                if (!role.isNullOrBlank()) {
+                                    val destination = when (role.lowercase()) {
+                                        "client" -> "client_home"
+                                        "cleaner" -> "cleaner_home"
+                                        else -> null
                                     }
-                                } ?: run {
-                                    loginError = "Unknown user role."
+                                    destination?.let {
+                                        navController.navigate(it) {
+                                            popUpTo("login") { inclusive = true }
+                                        }
+                                    } ?: run {
+                                        loginError = "Unknown user role."
+                                    }
+                                } else {
+                                    loginError = "Login failed. Please try again."
                                 }
-                            } else {
-                                loginError = "Login failed. Please try again."
                             }
                         }
                     },

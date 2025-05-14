@@ -43,6 +43,7 @@ import com.lemacy.cleanora.navigation.NavRoutes.JOB_POST
 import com.lemacy.cleanora.navigation.NavRoutes.MPESA_PAYMENT
 
 
+
 @Composable
 fun ClientHomeScreen(navController: NavHostController) {
     val jobViewModel: JobViewModel = viewModel()  // Use the JobViewModel to load jobs
@@ -87,32 +88,32 @@ fun ClientHomeScreen(navController: NavHostController) {
                     expanded = menuExpanded,
                     onDismissRequest = { menuExpanded = false }
                 ) {
-                    DropdownMenuItem(
-                        text = {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Default.Settings, contentDescription = null, tint = Color.Black)
-                                Spacer(Modifier.width(8.dp))
-                                Text("Settings")
-                            }
-                        },
-                        onClick = {
-                            showSettingsDialog = true
-                            menuExpanded = false
-                        }
-                    )
-                    DropdownMenuItem(
-                        text = {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Default.Help, contentDescription = null, tint = Color.Black)
-                                Spacer(Modifier.width(8.dp))
-                                Text("Help & Support")
-                            }
-                        },
-                        onClick = {
-                            showHelpDialog = true
-                            menuExpanded = false
-                        }
-                    )
+//                    DropdownMenuItem(
+//                        text = {
+//                            Row(verticalAlignment = Alignment.CenterVertically) {
+//                                Icon(Icons.Default.Settings, contentDescription = null, tint = Color.Black)
+//                                Spacer(Modifier.width(8.dp))
+//                                Text("Settings")
+//                            }
+//                        },
+//                        onClick = {navController.navigate(SETTINGS)
+//                            showSettingsDialog = true
+//                            menuExpanded = false
+//                        }
+//                    )
+//                    DropdownMenuItem(
+//                        text = {
+//                            Row(verticalAlignment = Alignment.CenterVertically) {
+//                                Icon(Icons.Default.Help, contentDescription = null, tint = Color.Black)
+//                                Spacer(Modifier.width(8.dp))
+//                                Text("Help & Support")
+//                            }
+//                        },
+//                        onClick = {
+//                            showHelpDialog = true
+//                            menuExpanded = false
+//                        }
+//                    )
                     DropdownMenuItem(
                         text = {
                             Row(verticalAlignment = Alignment.CenterVertically) {

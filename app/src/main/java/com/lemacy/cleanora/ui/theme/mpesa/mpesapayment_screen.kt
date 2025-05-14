@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Home
@@ -19,6 +21,8 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -34,6 +38,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -55,74 +60,94 @@ fun MpesaPaymentScreen(
     val context = LocalContext.current
     var phone by remember { mutableStateOf("") }
     var amount by remember { mutableStateOf("") }
-    var isLoading by remember { mutableStateOf(false) }
+    var isProcessing by remember { mutableStateOf(false) }
+    var paymentSuccess by remember { mutableStateOf<Boolean?>(null) }
+
     val lightLemonGreen = Color(0xFFE4F4D7)
+    val lemonPrimary = Color(0xFF7BBF3F)
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(lightLemonGreen) // Apply the light lemon green background here
+            .background(lightLemonGreen)
+            .padding(16.dp)
     ) {
-        Column(
+        Card(
+            shape = RoundedCornerShape(20.dp),
             modifier = Modifier
-                .fillMaxSize()
-                .padding(bottom = 72.dp, start = 24.dp, end = 24.dp, top = 24.dp), // Leave space for bottom nav
-            horizontalAlignment = Alignment.CenterHorizontally
+                .fillMaxWidth()
+                .align(Alignment.Center),
+            elevation = CardDefaults.cardElevation(8.dp),
+            colors = CardDefaults.cardColors(containerColor = lemonPrimary.copy(alpha = 0.05f))
         ) {
-            Text(
-                "Pay Service",
-                fontSize = 26.sp,
-                color = Color(0xFF7BBF3F),
-                fontWeight = FontWeight.Bold
-            )
+            Column(
+                modifier = Modifier
+                    .padding(24.dp)
+                    .fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    " Pay Service",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = lemonPrimary
+                )
 
-            Spacer(Modifier.height(32.dp))
+                OutlinedTextField(
+                    value = phone,
+                    onValueChange = { phone = it },
+                    label = { Text("Phone Number (2547XXXXXXXX)", color = lemonPrimary) },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                    modifier = Modifier.fillMaxWidth()
+                )
 
-            OutlinedTextField(
-                value = phone,
-                onValueChange = { phone = it },
-                label = { Text("Enter your Phone.no (2547XXXXXXXX)") },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth()
-            )
+                OutlinedTextField(
+                    value = amount,
+                    onValueChange = { amount = it },
+                    label = { Text("Amount", color = lemonPrimary) },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.fillMaxWidth()
+                )
 
-            Spacer(Modifier.height(16.dp))
-
-            OutlinedTextField(
-                value = amount,
-                onValueChange = { amount = it },
-                label = { Text("Amount") },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(Modifier.height(32.dp))
-
-            Button(
-                onClick = {
-                    if (phone.isBlank() || amount.isBlank()) {
-                        Toast.makeText(context, "Fill both fields", Toast.LENGTH_SHORT).show()
-                    } else {
-                        isLoading = true
-                        viewModel.initiatePayment(phone, amount) { success ->
-                            isLoading = false
-                            if (success) {
-                                Toast.makeText(context, "Payment initiated", Toast.LENGTH_LONG).show()
-                            } else {
-                                Toast.makeText(context, "Payment failed", Toast.LENGTH_LONG).show()
+                Button(
+                    onClick = {
+                        if (phone.isBlank() || amount.isBlank()) {
+                            Toast.makeText(context, "Please fill all fields", Toast.LENGTH_SHORT).show()
+                        } else {
+                            isProcessing = true
+                            viewModel.initiatePayment(phone, amount) { success ->
+                                isProcessing = false
+                                paymentSuccess = success
                             }
                         }
+                    },
+                    enabled = phone.isNotBlank() && amount.isNotBlank(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = lemonPrimary,
+                        contentColor = Color.White
+                    )
+                ) {
+                    if (isProcessing) {
+                        CircularProgressIndicator(color = Color.White, strokeWidth = 2.dp)
+                    } else {
+                        Text("Pay Now")
                     }
-                },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF7BBF3F)),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp)
-            ) {
-                if (isLoading) {
-                    CircularProgressIndicator(color = Color.White, strokeWidth = 2.dp)
-                } else {
-                    Text("Pay Service", color = Color.White)
+                }
+
+                paymentSuccess?.let { success ->
+                    val message = if (success) " Payment Request Sent!" else " Payment Failed. Try Again."
+                    val color = if (success) Color(0xFF2E7D32) else Color(0xFFD32F2F)
+                    Text(
+                        text = message,
+                        color = color,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
                 }
             }
         }
@@ -131,9 +156,9 @@ fun MpesaPaymentScreen(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(LemonGreen)
+                .background(lemonPrimary)
                 .padding(vertical = 8.dp)
-                .align(Alignment.BottomCenter), // Position at the bottom of the screen
+                .align(Alignment.BottomCenter),
             horizontalArrangement = Arrangement.SpaceAround,
             verticalAlignment = Alignment.CenterVertically
         ) {
